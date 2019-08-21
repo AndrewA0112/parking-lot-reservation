@@ -26,23 +26,28 @@ let users = [
 let parkingLot = [
     {
         id: 0,
-        available: false,
+        available: true,
+        reserveId: null
     },
     {
         id: 1,
-        available: false,
+        available: true,
+        reserveId: null
     },
     {
         id: 2,
-        available: false,
+        available: true,
+        reserveId: null
     },
     {
         id: 3,
-        available: false,
+        available: true,
+        reserveId: null
     },
     {
         id: 5,
-        available: false,
+        available: true,
+        reserveId: null
     },
 ]
 
@@ -71,59 +76,34 @@ app.post('/api/login', (req, res) => {
     } else {
         res
             .status(403)
-            .json({ error: `Username ${username} or Password ${password} incorrect. Please see Readme` });
+            .json({ error: `Username or Password incorrect. Please see Readme` });
     }
 });
 
-app.get('/api/friends', authenticator, (req, res) => {
+app.get('/api/parking-lot', authenticator, (req, res) => {
     setTimeout(() => {
-        res.send(friends);
+        res.send(parkingLot);
     }, 1000);
 });
 
-app.get('/api/friends/:id', authenticator, (req, res) => {
-    const friend = friends.find(f => f.id == req.params.id);
+app.put('/api/parking-lot', authenticator, (req, res) => {
+    const { username, parkingId } = req.body;
+    const parkingIndex = parkingLot.findIndex(p => p.id == parkingId)
+    const userIndex = users.findIndex(u => u.username == username)
 
-    if (friend) {
-        res.status(200).json(friend);
-    } else {
-        res.status(404).send({ msg: 'Friend not found' });
-    }
-});
-
-app.post('/api/friends', authenticator, (req, res) => {
-    const friend = { id: getNextId(), ...req.body };
-
-    friends = [...friends, friend];
-
-    res.send(friends);
-});
-
-app.put('/api/friends/:id', authenticator, (req, res) => {
-    const { id } = req.params;
-
-    const friendIndex = friends.findIndex(f => f.id == id);
-
-    if (friendIndex > -1) {
-        const friend = { ...friends[friendIndex], ...req.body };
-
-        friends = [
-            ...friends.slice(0, friendIndex),
-            friend,
-            ...friends.slice(friendIndex + 1)
+    if (parkingIndex > -1 && userIndex > -1) {
+        let reserveId = parkingLot[parkingIndex].available ? users.filter(user => user.username == username)[0].id : null
+        const parkingSpace = { ...parkingLot[parkingIndex], available: !parkingLot[parkingIndex].available, reserveId: reserveId}
+        parkingLot = [
+            ...parkingLot.slice(0, parkingIndex),
+            parkingSpace,
+            ...parkingLot.slice(parkingIndex + 1)
         ];
-        res.send(friends);
+        
+        res.send(parkingLot);
     } else {
         res.status(404).send({ msg: 'Friend not found' });
     }
-});
-
-app.delete('/api/friends/:id', authenticator, (req, res) => {
-    const { id } = req.params;
-
-    friends = friends.filter(f => f.id !== Number(id));
-
-    res.send(friends);
 });
 
 function getNextId() {
