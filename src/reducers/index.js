@@ -1,0 +1,3 @@
+export {
+    parkingLotReducer
+} from './parkingLotReducer'
