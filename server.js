@@ -63,6 +63,15 @@ function authenticator(req, res, next) {
     }
 }
 
+function replaceAtIndex(arr, index, object) {
+    tempArr = [
+        ...arr.slice(0, index),
+        object,
+        ...arr.slice(index + 1)
+    ];
+    return tempArr;
+}
+
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
     const user = users.filter(user => user.username === username && user.password === password)
@@ -86,40 +95,31 @@ app.get('/api/parking-lot', authenticator, (req, res) => {
 });
 
 app.put('/api/parking-lot', authenticator, (req, res) => {
-    const { token, parkingId } = req.body;
-    const parkingIndex = parkingLot.findIndex(p => p.id == parkingId)
-    const userIndex = users.findIndex(u => u.token == token)
-
-    if (parkingIndex > -1 && userIndex > -1) {
-        let reserveId = parkingLot[parkingIndex].available ? users.filter(user => user.username == username)[0].id : null
-        const parkingSpace = { ...parkingLot[parkingIndex], available: !parkingLot[parkingIndex].available, reserveId: reserveId}
-        parkingLot = [
-            ...parkingLot.slice(0, parkingIndex),
-            parkingSpace,
-            ...parkingLot.slice(parkingIndex + 1)
-        ];
+    const { parkingId } = req.body, token = req.headers.authorization;
+    const parkingIndex = parkingLot.findIndex(p => p.id == parkingId), userIndex = users.findIndex(u => u.token == token)
+    const currentParkingSpot = parkingLot[parkingIndex], currentUser = users[userIndex]
+    if (currentParkingSpot && currentUser) {
+        if(currentUser.reservation) {
+            parkingLot.find(parkingSpace => parkingSpace.id == currentUser.reservation).reserveId = null
+            parkingLot.find(parkingSpace => parkingSpace.id == currentUser.reservation).available = true
+        }
+        let reserveId = currentParkingSpot.available ? users.find(user => user.token == token).id : null
+        const parkingSpace = { ...currentParkingSpot, available: !currentParkingSpot.available, reserveId: reserveId}
+        parkingLot = replaceAtIndex(parkingLot, parkingIndex, parkingSpace)
 
         if(reserveId) {
-            const user = { ...users[userIndex], reservation: parkingLot.filter(parkingSpace => parkingSpace.id == parkingId)[0].id}
-            users = [
-                ...users.slice(0, userIndex),
-                user,
-                ...users.slice(userIndex + 1)
-            ]
-            console.log('ADDED PARKING ID TO USER OBJECT', users)
+            const user = { ...currentUser, reservation: parkingLot.find(parkingSpace => parkingSpace.id == parkingId).id}
+            users = replaceAtIndex(users, userIndex, user)
+            console.log(users)
         } else {
-            const user = { ...users[userIndex], reservation: null}
-            users = [
-                ...users.slice(0, userIndex),
-                user,
-                ...users.slice(userIndex + 1)
-            ]
-            console.log('REMOVED PARKING ID FROM USER OBJECT', users)
+            const user = { ...currentUser, reservation: null}
+            users = replaceAtIndex(users, userIndex, user)
+            console.log(users)
         }
         
         res.send(parkingLot);
     } else {
-        res.status(404).send({ msg: 'Parking Spot Not Found' });
+        res.status(404).send({ msg: `Parking Spot Not Found ${currentParkingSpot} ${currentUser}` });
     }
 });
 
