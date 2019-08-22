@@ -18,6 +18,7 @@ export const SET_USERNAME = "SET_USERNAME"
 export const login = (creds) => dispatch =>
 {
     dispatch({ type: POST_LOGIN_START })
+    console.log("blah")
     axios
         .post('http://localhost5000/api/login', creds)
         .then(res =>
@@ -49,14 +50,14 @@ export const getParkingLot = () => dispatch =>
                 dispatch({ type: GET_PARKING_FAIL, payload: err })
             })
 }
-export const updateReservation = (username, parkingID) => dispatch =>
+export const updateReservation = (token, parkingID) => dispatch =>
 {
     dispatch({ type: UPDATE_PARKING_START })
     axiosWithAuth()
-        .put('http://localhost5000/api/parking-lot',{username: username, parkingID: parkingID})
+        .put('http://localhost5000/api/parking-lot', {token: token, parkingID: parkingID})
         .then(res =>
             {
-                console.log('res from updateReservation',res)
+                console.log('res from updateReservation', res)
                 dispatch({ type: UPDATE_PARKING_SUCCESS, payload: res })
             })
         .catch(err =>
