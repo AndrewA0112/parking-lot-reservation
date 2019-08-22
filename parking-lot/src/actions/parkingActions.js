@@ -25,6 +25,7 @@ export const login = (creds) => dispatch =>
                 console.log('res from login:', res)
 
                 dispatch({ type: POST_LOGIN_SUCCESS, payload: res.data})
+                window.localStorage.setItem('token', res.data)
             })
         .catch(err =>
             {
