@@ -7,7 +7,7 @@ const Login = (props) => {
 
     const onSubmit = (e) => {
         e.preventDefault();
-        props.login(creds)
+        props.login(creds, props.history)
     }
 
     const handleChange = event => {
