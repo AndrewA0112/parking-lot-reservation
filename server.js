@@ -1,24 +1,23 @@
 const express = require('express');
+const uuidv4 = require('uuid/v4');
 const bodyParser = require('body-parser');
 const cors = require('cors');
 const port = 5000;
 const app = express();
-const token =
-    'esfeyJ1c2VySWQiOiJiMDhmODZhZi0zNWRhLTQ4ZjItOGZhYi1jZWYzOTA0NUIhkufemQifQ';
-
-let nextId = 3;
 
 let users = [
     {
         id: 1,
         username: 'UserOne',
         password: 'password',
+        token: uuidv4(),
         reservation: null
     },
     {
         id: 2,
         username: 'UserTwo',
         password: 'password',
+        token: uuidv4(),
         reservation: null
     }
 ];
@@ -57,7 +56,7 @@ app.use(cors());
 
 function authenticator(req, res, next) {
     const { authorization } = req.headers;
-    if (authorization === token) {
+    if (users.filter(user => authorization === user.token).length > 0) {
         next();
     } else {
         res.status(403).json({ error: 'User be logged in to do that.' });
@@ -66,17 +65,17 @@ function authenticator(req, res, next) {
 
 app.post('/api/login', (req, res) => {
     const { username, password } = req.body;
-    if (users.filter(user => 
-        user.username === username && user.password === password
-    ).length > 0) {
+    const user = users.filter(user => user.username === username && user.password === password)
+    if (user.length > 0) {
         req.loggedIn = true;
+        console.log(user[0].token)
         res.status(200).json({
-            payload: token
+            payload: user[0].token
         });
     } else {
         res
             .status(403)
-            .json({ error: `Username or Password incorrect. Please see Readme` });
+            .json({ error: `Username or Password incorrect.` });
     }
 });
 
@@ -87,9 +86,9 @@ app.get('/api/parking-lot', authenticator, (req, res) => {
 });
 
 app.put('/api/parking-lot', authenticator, (req, res) => {
-    const { username, parkingId } = req.body;
+    const { token, parkingId } = req.body;
     const parkingIndex = parkingLot.findIndex(p => p.id == parkingId)
-    const userIndex = users.findIndex(u => u.username == username)
+    const userIndex = users.findIndex(u => u.token == token)
 
     if (parkingIndex > -1 && userIndex > -1) {
         let reserveId = parkingLot[parkingIndex].available ? users.filter(user => user.username == username)[0].id : null
@@ -99,16 +98,30 @@ app.put('/api/parking-lot', authenticator, (req, res) => {
             parkingSpace,
             ...parkingLot.slice(parkingIndex + 1)
         ];
+
+        if(reserveId) {
+            const user = { ...users[userIndex], reservation: parkingLot.filter(parkingSpace => parkingSpace.id == parkingId)[0].id}
+            users = [
+                ...users.slice(0, userIndex),
+                user,
+                ...users.slice(userIndex + 1)
+            ]
+            console.log('ADDED PARKING ID TO USER OBJECT', users)
+        } else {
+            const user = { ...users[userIndex], reservation: null}
+            users = [
+                ...users.slice(0, userIndex),
+                user,
+                ...users.slice(userIndex + 1)
+            ]
+            console.log('REMOVED PARKING ID FROM USER OBJECT', users)
+        }
         
         res.send(parkingLot);
     } else {
-        res.status(404).send({ msg: 'Friend not found' });
+        res.status(404).send({ msg: 'Parking Spot Not Found' });
     }
 });
-
-function getNextId() {
-    return nextId++;
-}
 
 app.listen(port, () => {
     console.log(`server listening on port ${port}`);
