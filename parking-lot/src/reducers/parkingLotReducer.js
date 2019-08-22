@@ -15,7 +15,7 @@ import {
 } from '../actions'
 
 const initialState = {
-    username: '',
+    token: '',
     parkingLot: [],
     error: '',
     isLoading: false,
@@ -33,8 +33,15 @@ export const parkingLotReducer = (state=initialState, action) =>
         case POST_LOGIN_SUCCESS:
             return {
                 ...state,
+                token: action.payload,
                 isLoading: false,
                 error: "",
+            }
+        case POST_LOGIN_FAIL:
+            return {
+                ...state,
+                isLoading: false,
+                error: action.payload
             }
         default:
             return state
