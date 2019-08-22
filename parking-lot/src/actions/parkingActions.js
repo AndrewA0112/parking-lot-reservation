@@ -15,22 +15,24 @@ export const UPDATE_PARKING_FAIL = "UPDATE_PARKING_FAIL"
 
 export const SET_USERNAME = "SET_USERNAME"
 
-export const login = (creds) => dispatch =>
+export const login = (creds, history) => dispatch =>
 {
     dispatch({ type: POST_LOGIN_START })
     console.log("blah")
+    console.log(creds)
     axios
-        .post('http://localhost5000/api/login', creds)
+        .post('http://localhost:5000/api/login', creds)
         .then(res =>
             {
                 console.log('res from login:', res)
 
-                dispatch({ type: POST_LOGIN_SUCCESS, payload: res.data})
-                window.localStorage.setItem('token', res.data)
+                dispatch({ type: POST_LOGIN_SUCCESS, payload: res.data.payload})
+                localStorage.setItem('token', res.data.payload)
+                history.push('/parking-lot')
             })
         .catch(err =>
             {
-                console.log(err)
+                console.log('a',err)
                 dispatch({ type: POST_LOGIN_FAIL, payload: err })
             })
 }
@@ -38,12 +40,13 @@ export const login = (creds) => dispatch =>
 export const getParkingLot = () => dispatch =>
 {
     dispatch({ type: GET_PARKING_START })
+    console.log('blah2')
     axiosWithAuth()
-        .get('http://localhost5000/api/parking-lot')
+        .get('http://localhost:5000/api/parking-lot')
         .then(res =>
             {
                 console.log('res from getPL', res)
-                dispatch({ type: GET_PARKING_SUCCESS, payload: res })
+                dispatch({ type: GET_PARKING_SUCCESS, payload: res.data })
             })
         .catch(err =>
             {
@@ -55,7 +58,7 @@ export const updateReservation = (token, parkingID) => dispatch =>
 {
     dispatch({ type: UPDATE_PARKING_START })
     axiosWithAuth()
-        .put('http://localhost5000/api/parking-lot', {token: token, parkingID: parkingID})
+        .put('http://localhost:5000/api/parking-lot', {token: token, parkingID: parkingID})
         .then(res =>
             {
                 console.log('res from updateReservation', res)

@@ -9,9 +9,6 @@ import {
     UPDATE_PARKING_SUCCESS,
     UPDATE_PARKING_FAIL,
     SET_USERNAME,
-    login,
-    getParkingLot,
-    updateReservation,
 } from '../actions'
 
 const initialState = {
@@ -43,6 +40,26 @@ export const parkingLotReducer = (state=initialState, action) =>
                 isLoading: false,
                 error: action.payload
             }
+        case GET_PARKING_START:
+            return {
+                ...state,
+                isLoading: true,
+                error: ''
+            }
+        case GET_PARKING_SUCCESS:
+            return {
+                ...state,
+                isLoading: false,
+                error: '',
+                parkingLot: action.payload
+            }
+        case GET_PARKING_FAIL:
+            return {
+                ...state,
+                isLoading: false,
+                error: action.payload
+            }
+        
         default:
             return state
     }
