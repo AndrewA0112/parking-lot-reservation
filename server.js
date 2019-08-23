@@ -95,9 +95,12 @@ app.get('/api/parking-lot', authenticator, (req, res) => {
 });
 
 app.put('/api/parking-lot', authenticator, (req, res) => {
-    const { parkingId } = req.body, token = req.headers.authorization;
-    const parkingIndex = parkingLot.findIndex(p => p.id == parkingId), userIndex = users.findIndex(u => u.token == token)
-    const currentParkingSpot = parkingLot[parkingIndex], currentUser = users[userIndex]
+    const { parkingId } = req.body
+    const token = req.headers.authorization;
+    const parkingIndex = parkingLot.findIndex(p => p.id == parkingId)
+    const userIndex = users.findIndex(u => u.token == token)
+    const currentParkingSpot = parkingLot[parkingIndex]
+    const currentUser = users[userIndex]
     if (currentParkingSpot && currentUser) {
         if(currentUser.reservation) {
             parkingLot.find(parkingSpace => parkingSpace.id == currentUser.reservation).reserveId = null
