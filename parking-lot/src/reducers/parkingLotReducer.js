@@ -59,6 +59,25 @@ export const parkingLotReducer = (state=initialState, action) =>
                 isLoading: false,
                 error: action.payload
             }
+        case UPDATE_PARKING_START:
+            return {
+                ...state,
+                isLoading: true,
+                error: '',
+            }
+        case UPDATE_PARKING_SUCCESS:
+            return {
+                ...state,
+                isLoading: false,
+                error: '',
+                parkingLot: action.payload
+            }
+        case UPDATE_PARKING_FAIL:
+            return {
+                ...state,
+                isLoading: false,
+                error: action.payload
+            }
         
         default:
             return state

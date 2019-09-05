@@ -1,6 +1,7 @@
 import React, {useEffect} from "react"
 import {useSelector, useDispatch} from "react-redux"
 import {getParkingLot, updateReservation} from "../actions"
+import ParkingSpace from "./ParkingSpace";
 
 const ParkingLot = _ =>
 {
@@ -15,7 +16,7 @@ const ParkingLot = _ =>
 
     return (
         <>
-            {state.parkingLot.map(spot => <p key={spot.id}>{spot.id}</p>)}
+            {state.parkingLot.map(spot => <ParkingSpace key={spot.id} spot={spot} />)}
         </>
     )
 }
