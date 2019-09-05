@@ -54,15 +54,17 @@ export const getParkingLot = () => dispatch =>
                 dispatch({ type: GET_PARKING_FAIL, payload: err })
             })
 }
-export const updateReservation = (token, parkingID) => dispatch =>
+export const updateReservation = (parkingID) => dispatch =>
 {
     dispatch({ type: UPDATE_PARKING_START })
+    const token = localStorage.getItem('token')
+    console.log(token, parkingID)
     axiosWithAuth()
-        .put('http://localhost:5000/api/parking-lot', {token: token, parkingID: parkingID})
+        .put('http://localhost:5000/api/parking-lot',{"parkingId": parkingID})
         .then(res =>
             {
                 console.log('res from updateReservation', res)
-                dispatch({ type: UPDATE_PARKING_SUCCESS, payload: res })
+                dispatch({ type: UPDATE_PARKING_SUCCESS, payload: res.data })
             })
         .catch(err =>
             {

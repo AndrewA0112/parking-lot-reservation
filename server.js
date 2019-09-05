@@ -24,11 +24,6 @@ let users = [
 
 let parkingLot = [
     {
-        id: 0,
-        available: true,
-        reserveId: null
-    },
-    {
         id: 1,
         available: true,
         reserveId: null
@@ -40,6 +35,11 @@ let parkingLot = [
     },
     {
         id: 3,
+        available: true,
+        reserveId: null
+    },
+    {
+        id: 4,
         available: true,
         reserveId: null
     },
@@ -95,35 +95,38 @@ app.get('/api/parking-lot', authenticator, (req, res) => {
 });
 
 app.put('/api/parking-lot', authenticator, (req, res) => {
-    const { parkingId } = req.body
+    const { parkingId } = req.body;
     const token = req.headers.authorization;
     const parkingIndex = parkingLot.findIndex(p => p.id == parkingId)
     const userIndex = users.findIndex(u => u.token == token)
     const currentParkingSpot = parkingLot[parkingIndex]
     const currentUser = users[userIndex]
-    if (currentParkingSpot && currentUser) {
-        if(currentUser.reservation) {
-            parkingLot.find(parkingSpace => parkingSpace.id == currentUser.reservation).reserveId = null
-            parkingLot.find(parkingSpace => parkingSpace.id == currentUser.reservation).available = true
-        }
-        let reserveId = currentParkingSpot.available ? users.find(user => user.token == token).id : null
-        const parkingSpace = { ...currentParkingSpot, available: !currentParkingSpot.available, reserveId: reserveId}
-        parkingLot = replaceAtIndex(parkingLot, parkingIndex, parkingSpace)
-
-        if(reserveId) {
-            const user = { ...currentUser, reservation: parkingLot.find(parkingSpace => parkingSpace.id == parkingId).id}
-            users = replaceAtIndex(users, userIndex, user)
-            console.log(users)
-        } else {
-            const user = { ...currentUser, reservation: null}
-            users = replaceAtIndex(users, userIndex, user)
-            console.log(users)
-        }
-        
-        res.send(parkingLot);
-    } else {
-        res.status(404).send({ msg: `Parking Spot Not Found ${currentParkingSpot} ${currentUser}` });
+    if (!currentParkingSpot.available && currentParkingSpot.reserveId !== currentUser.id) {
+        return res.status(404).send({ msg: `Parking Spot Already Taken`})
     }
+    if (!currentParkingSpot) {
+        return res.status(404).send({ msg: `Parking Spot Not Found` });
+    }
+    if (!currentUser) {
+        return res.status(404).send({ msg: `User Not Found` });
+    }
+    if (currentUser.reservation) {
+        parkingLot.find(parkingSpace => parkingSpace.id == currentUser.reservation).reserveId = null
+        parkingLot.find(parkingSpace => parkingSpace.id == currentUser.reservation).available = true
+    }
+    let reserveId = currentParkingSpot.available ? users.find(user => user.token == token).id : null
+    const parkingSpace = { ...currentParkingSpot, available: !currentParkingSpot.available, reserveId: reserveId }
+    parkingLot = replaceAtIndex(parkingLot, parkingIndex, parkingSpace)
+
+    if (reserveId) {
+        const user = { ...currentUser, reservation: parkingLot.find(parkingSpace => parkingSpace.id == parkingId).id }
+        users = replaceAtIndex(users, userIndex, user)
+    } else {
+        const user = { ...currentUser, reservation: null }
+        users = replaceAtIndex(users, userIndex, user)
+    }
+
+    res.send(parkingLot);
 });
 
 app.listen(port, () => {
