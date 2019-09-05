@@ -1,5 +1,5 @@
 // import {join} from 'path'
-const join = require('path')
+const path = require('path')
 const express = require('express');
 const uuidv4 = require('uuid/v4');
 const bodyParser = require('body-parser');
