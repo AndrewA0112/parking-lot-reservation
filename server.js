@@ -59,7 +59,7 @@ let parkingLot = [
 
 // If we're in heroku, serve up the built react code.
 if (ISDEPLOYED) {
-    app.use(express.static(join(__dirname, '..', 'build')));
+    app.use('./', express.static(path.join(__dirname, 'build')));
 } else {
     // Otherwise we're local, so allow cross-origin resource sharing.
     // (i.e. so localhost:3000 can call against localhost:8080)
@@ -150,7 +150,7 @@ if (ISDEPLOYED) {
         req.url = 'index.html';
         next();
     });
-    app.use(express.static(join(__dirname, '..', 'build')));
+    app.use('./', express.static(path.join(__dirname, 'build')));
 }
 
 
