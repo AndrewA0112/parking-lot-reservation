@@ -14,6 +14,9 @@ export const UPDATE_PARKING_SUCCESS = "UPDATE_PARKING_SUCCESS"
 export const UPDATE_PARKING_FAIL = "UPDATE_PARKING_FAIL"
 
 export const SET_USERNAME = "SET_USERNAME"
+const url = process.env.NODE_ENV === 'development'
+    ? 'http://localhost:8080/api'
+    : '/api'
 
 export const login = (creds, history) => dispatch =>
 {
@@ -21,7 +24,7 @@ export const login = (creds, history) => dispatch =>
     console.log("blah")
     console.log(creds)
     axios
-        .post('http://localhost:5000/api/login', creds)
+        .post(`${url}/login`, creds)
         .then(res =>
             {
                 console.log('res from login:', res)
@@ -41,8 +44,9 @@ export const getParkingLot = () => dispatch =>
 {
     dispatch({ type: GET_PARKING_START })
     console.log('blah2')
-    axiosWithAuth()
-        .get('http://localhost:5000/api/parking-lot')
+    // Add axiosWithAuth
+    axios
+        .get(`${url}/parking-lot`)
         .then(res =>
             {
                 console.log('res from getPL', res)
@@ -60,7 +64,7 @@ export const updateReservation = (parkingID) => dispatch =>
     const token = localStorage.getItem('token')
     console.log(token, parkingID)
     axiosWithAuth()
-        .put('http://localhost:5000/api/parking-lot',{"parkingId": parkingID})
+        .put(`${url}/parking-lot`,{"parkingId": parkingID})
         .then(res =>
             {
                 console.log('res from updateReservation', res)
