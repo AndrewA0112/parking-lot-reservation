@@ -2,8 +2,13 @@ const express = require('express');
 const uuidv4 = require('uuid/v4');
 const bodyParser = require('body-parser');
 const cors = require('cors');
-const port = 5000;
+
+
 const app = express();
+const ISDEPLOYED = process.env.HEROKU === 'TRUE';
+const port = process.env.PORT || 8080;
+
+app.use(bodyParser.json());
 
 let users = [
     {
@@ -50,9 +55,14 @@ let parkingLot = [
     },
 ]
 
-app.use(bodyParser.json());
-
-app.use(cors());
+// If we're in heroku, serve up the built react code.
+if (ISDEPLOYED) {
+    app.use(express.static(join(__dirname, '..', 'build')));
+} else {
+    // Otherwise we're local, so allow cross-origin resource sharing.
+    // (i.e. so localhost:3000 can call against localhost:8080)
+    app.use(cors());
+}
 
 function authenticator(req, res, next) {
     const { authorization } = req.headers;
@@ -88,13 +98,15 @@ app.post('/api/login', (req, res) => {
     }
 });
 
-app.get('/api/parking-lot', authenticator, (req, res) => {
+// add authenticator
+app.get('/api/parking-lot', (req, res) => {
     setTimeout(() => {
         res.send(parkingLot);
     }, 1000);
 });
 
-app.put('/api/parking-lot', authenticator, (req, res) => {
+// add authenticator
+app.put('/api/parking-lot', (req, res) => {
     const { parkingId } = req.body;
     const token = req.headers.authorization;
     const parkingIndex = parkingLot.findIndex(p => p.id == parkingId)
@@ -128,6 +140,17 @@ app.put('/api/parking-lot', authenticator, (req, res) => {
 
     res.send(parkingLot);
 });
+
+
+// If we're in heroku, serve up the built react code to catch all other calls.
+if (ISDEPLOYED) {
+    app.get('*', (req, res, next) => {
+        req.url = 'index.html';
+        next();
+    });
+    app.use(express.static(join(__dirname, '..', 'build')));
+}
+
 
 app.listen(port, () => {
     console.log(`server listening on port ${port}`);

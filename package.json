@@ -1,7 +1,8 @@
 {
   "main": "server.js",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "server": "nodemon server.js"
   },
   "dependencies": {
     "body-parser": "^1.19.0",
